@@ -9,60 +9,64 @@ const awsRegion = 'us-west-2';
 
 exports.handler = async (event) => {
 
-    console.log('Lambda execution started', JSON.stringify(event));
+    try {
+        console.log('Lambda execution started', JSON.stringify(event));
 
-    // Read SNS Message
-    let snsMessage = JSON.parse(event.Records[0].Sns.Message);
-    console.log('Sns Content =>', snsMessage);
+        // Read SNS Message
+        let snsMessage = JSON.parse(event.Records[0].Sns.Message);
+        console.log('Sns Content =>', snsMessage);
 
-     // Read sender email id
-     let senderEmail = snsMessage.mail.source;
-     console.log('Sender: ', senderEmail);
+        // Read sender email id
+        let senderEmail = snsMessage.mail.source;
+        console.log('Sender: ', senderEmail);
 
-     // Create user in dynamo db.
-     let userId = saveUserInDb(senderEmail);
+        // Create user in dynamo db.
+        let userId = saveUserInDb(senderEmail);
 
-    // Read s3 details
-    let s3Bucket = snsMessage.receipt.action.bucketName;
-    let s3Object = snsMessage.receipt.action.objectKey;
+        // Read s3 details
+        let s3Bucket = snsMessage.receipt.action.bucketName;
+        let s3Object = snsMessage.receipt.action.objectKey;
 
-    // Read email content from s3
-    let emailContent = await getEmailContentFromS3(s3Bucket, s3Object);
-    console.log('Email content fetched successfully.');
+        // Read email content from s3
+        let emailContent = await getEmailContentFromS3(s3Bucket, s3Object);
+        console.log('Email content fetched successfully.');
 
 
-    // Parse Email's mime contents
-    const mailParser = require('mailparser').simpleParser;
-    emailContent = await mailParser(emailContent);
-    console.log('Email content parsed successfully.');
+        // Parse Email's mime contents
+        const mailParser = require('mailparser').simpleParser;
+        emailContent = await mailParser(emailContent);
+        console.log('Email content parsed successfully.');
 
-    // Read & Save attachments
-    for (var i = 0; i < emailContent.attachments.length; i++) {
+        // Read & Save attachments
+        for (var i = 0; i < emailContent.attachments.length; i++) {
 
-        let imageObject = emailContent.attachments[i];
-        let content = imageObject.content;
+            let imageObject = emailContent.attachments[i];
+            let content = imageObject.content;
 
-        // Read file extension
-        let fileExtension = path.extname(imageObject.filename);
-        console.log('file extension =>', fileExtension);
+            // Read file extension
+            let fileExtension = path.extname(imageObject.filename);
+            console.log('file extension =>', fileExtension);
 
-        // Generate attachment uniq id
-        let s3FileName = uuidv4() + i;
-        if (fileExtension) {
-            s3FileName = s3FileName + fileExtension;
+            // Generate attachment uniq id
+            let s3FileName = uuidv4() + i;
+            if (fileExtension) {
+                s3FileName = s3FileName + fileExtension;
+            }
+
+            // Write image to s3
+            let writeResult = await saveAttachmentToS3(s3Bucket, senderEmail, s3FileName, content);
+            console.log('Attachment #' + (i + 1) + ' Saved.');
+
         }
 
-        // Write image to s3
-        let writeResult = await saveAttachmentToS3(s3Bucket, senderEmail, s3FileName, content);
-        console.log('Attachment #' + (i+1) +  ' Saved.');
+        const response = {
+            statusCode: 200
+        };
 
+        return response;
+    } catch (err) {
+        console.error('Error Occured: ', err)
     }
-
-    const response = {
-        statusCode: 200
-    };
-
-    return response;
 };
 
 
