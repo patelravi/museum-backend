@@ -20,5 +20,22 @@ router.get('/images', async function (req, res) {
 
 })
 
+// Mentor list
+router.get('/image', async function (req, res) {
+
+    
+    let imageId = req.query.id;
+    console.log(' requrest arrived...', imageId);
+
+    //Read image list
+    let result = await imageModule.getImagesOfUser(imageId);
+
+    res.json({
+        success: true,
+        images: result
+    });
+
+})
+
 
 module.exports = router;
