@@ -57,6 +57,9 @@ exports.handler = async (event) => {
             let writeResult = await saveAttachmentToS3(s3Bucket, senderEmail, s3FileName, content);
             console.log('Attachment #' + (i + 1) + ' Saved.');
 
+            // Save image in db against user
+            saveUserImageInDb(senderEmail, s3FileName);
+
         }
 
         const response = {
@@ -96,6 +99,39 @@ let saveUserInDb = async function (emailId) {
 
 }
 
+// Save Attachment Against User In Db
+let saveUserImageInDb = async function (emailId, s3ObjectId) {
+
+    let dynamoDb = new aws.DynamoDB.DocumentClient({
+        accessKeyId: awsAccessKeyId,
+        secretAccessKey: awsAccessKeySecret,
+        region: awsRegion,
+        convertEmptyValues: true
+    });
+
+    // Generate Unique attachment id
+    let imageId = uuidv4();
+
+    // Create user with email id
+    let params = {
+        TableName: 'images',
+        Item: {
+            "id": imageId,
+            "email": emailId,
+            "s3ObjectID": s3ObjectId
+        }
+    };
+
+    // Store image link in dynamo db
+    dynamoDb.put(params, function (error, data) {
+        if (error) {
+            console.error(error, JSON.stringify(params.Item.info.data));
+            return error;
+        }
+        console.log("Image for given user saved in db.")
+    });
+
+}
 
 // Read email with attachments from s3
 var aws = require('aws-sdk');
