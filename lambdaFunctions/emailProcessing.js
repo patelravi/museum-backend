@@ -38,6 +38,7 @@ exports.handler = async (event) => {
         console.log('Email content parsed successfully.');
 
         // Read & Save attachments
+        let imageIdList = [];
         for (var i = 0; i < emailContent.attachments.length; i++) {
 
             let imageObject = emailContent.attachments[i];
@@ -58,8 +59,15 @@ exports.handler = async (event) => {
             console.log('Attachment #' + (i + 1) + ' Saved.');
 
             // Save image in db against user
-            imageModule.saveImageInDb(senderEmail, s3FileName, s3Bucket);
+            let imageId = await imageModule.saveImageInDb(senderEmail, s3FileName, s3Bucket);
+            imageIdList.push(imageId);
 
+        }
+
+        // Send image saved email to sender
+        if (imageIdList.length > 0) {
+            console.log('saving images', imageIdList)
+            await userModule.sendImageProcessedEmail(senderEmail, imageIdList);
         }
 
         const response = {

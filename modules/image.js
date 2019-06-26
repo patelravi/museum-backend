@@ -48,6 +48,8 @@ exports.saveImageInDb = async function (emailId, s3ObjectId, bucketName) {
     await dynamoDb.put(params).promise();
     console.log("Image for given user saved in db.")
 
+    return imageId;
+
 }
 
 
@@ -89,9 +91,9 @@ exports.getImagesOfUser = async function (emailId) {
 
         let s3ObjectId = imageList[i].s3ObjectID;
         let bucketName = imageList[i].s3BucketName;
-        
+
         const params = {
-            Bucket: bucketName ,
+            Bucket: bucketName,
             Key: emailId + '/' + s3ObjectId,
             Expires: urlExpiryTime
         };
@@ -146,9 +148,9 @@ exports.getImageById = async function (imageId) {
 
         let s3ObjectId = imageList[i].s3ObjectID;
         let bucketName = imageList[i].s3BucketName;
-        
+
         const params = {
-            Bucket: bucketName ,
+            Bucket: bucketName,
             Key: emailId + '/' + s3ObjectId,
             Expires: urlExpiryTime
         };
