@@ -111,30 +111,29 @@ exports.getImagesOfUser = async function (emailId) {
 
 exports.getImageById = async function (imageId) {
 
-    let dynamoDb = new aws.DynamoDB.DocumentClient({
+    // Read image object from dynamo
+    let dynamoDb = new aws.DynamoDB({
         accessKeyId: deployConfig.ddb.awsAccessKeyId,
         secretAccessKey: deployConfig.ddb.awsAccessKeySecret,
         region: deployConfig.ddb.awsRegion,
         convertEmptyValues: true
     });
-
     let query = {
         TableName: "images",
-        ProjectionExpression: "#d, s3ObjectID, s3BucketName",
-        FilterExpression: "#d = :id",
-        ExpressionAttributeNames: {
-            "#d": "id",
+        ProjectionExpression: "id, email, s3ObjectID, s3BucketName",
+        Key: {
+            "id": { "S": imageId }
         },
-        ExpressionAttributeValues: {
-            ":id": imageId
-        }
+    }
+    let result = await dynamoDb.getItem(query).promise();
+    if (!result) {
+        return null;
     }
 
-    let result = await dynamoDb.scan(query).promise();
-    // let image = result;
-    console.log('Image  is =>', result);
-    return null;
-    // Itereate and generate temporary url for each iamges
+    // Generate signed url of image
+    let s3ObjectId = result.Item.s3ObjectID.S;
+    let bucketName = result.Item.s3BucketName.S;
+    let email = result.Item.email.S;
 
     var s3 = new aws.S3({
         accessKeyId: deployConfig.s3.awsAccessKeyId,
@@ -143,25 +142,13 @@ exports.getImageById = async function (imageId) {
     });
     const urlExpiryTime = 60 * 5;
 
-    for (var i = 0; i < imageList.length; i++) {
+    const params = {
+        Bucket: bucketName,
+        Key: email + '/' + s3ObjectId,
+        Expires: urlExpiryTime
+    };
+    var signedUrl = s3.getSignedUrl('getObject', params);
 
-
-        let s3ObjectId = imageList[i].s3ObjectID;
-        let bucketName = imageList[i].s3BucketName;
-
-        const params = {
-            Bucket: bucketName,
-            Key: emailId + '/' + s3ObjectId,
-            Expires: urlExpiryTime
-        };
-
-        var signedUrl = s3.getSignedUrl('getObject', params);
-
-        imageList[i] = {
-            id: imageList[i].id,
-            url: signedUrl
-        };
-    }
-
-    return imageList;
+    // Return image signed url
+    return signedUrl;
 }

@@ -6,7 +6,7 @@ const imageModule = require('./../modules/image');
 // Mentor list
 router.get('/images', async function (req, res) {
 
-    
+
     let emailId = req.query.email;
     console.log(' requrest arrived...', emailId);
 
@@ -21,19 +21,27 @@ router.get('/images', async function (req, res) {
 })
 
 // Mentor list
-router.get('/image', async function (req, res) {
+router.get('/image/:id', async function (req, res) {
 
-    
-    let imageId = req.query.id;
+
+    let imageId = req.params.id;
     console.log(' requrest arrived...', imageId);
 
     //Read image list
-    let result = await imageModule.getImagesOfUser(imageId);
+    try {
+        let result = await imageModule.getImageById(imageId);
 
-    res.json({
-        success: true,
-        images: result
-    });
+        res.json({
+            success: true,
+            url: result
+        });
+    } catch (err) {
+        console.error(err);
+        res.json({
+            success: false,
+            data: err
+        });
+    }
 
 })
 
