@@ -6,8 +6,8 @@ const uuidv4 = require('uuid/v4');
 exports.saveImageToS3 = async function (bucketName, userId, fileName, data) {
 
     var s3 = new aws.S3({
-        accessKeyId: deployConfig.s3.awsAccessKeyId,
-        secretAccessKey: deployConfig.s3.awsAccessKeySecret
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret
     });
 
     const params = {
@@ -24,9 +24,9 @@ exports.saveImageToS3 = async function (bucketName, userId, fileName, data) {
 exports.saveImageInDb = async function (emailId, s3ObjectId, bucketName) {
 
     let dynamoDb = new aws.DynamoDB.DocumentClient({
-        accessKeyId: deployConfig.ddb.awsAccessKeyId,
-        secretAccessKey: deployConfig.ddb.awsAccessKeySecret,
-        region: deployConfig.ddb.awsRegion,
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
         convertEmptyValues: true
     });
 
@@ -56,9 +56,9 @@ exports.saveImageInDb = async function (emailId, s3ObjectId, bucketName) {
 exports.getImagesOfUser = async function (emailId) {
 
     let dynamoDb = new aws.DynamoDB.DocumentClient({
-        accessKeyId: deployConfig.ddb.awsAccessKeyId,
-        secretAccessKey: deployConfig.ddb.awsAccessKeySecret,
-        region: deployConfig.ddb.awsRegion,
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
         convertEmptyValues: true
     });
 
@@ -80,9 +80,9 @@ exports.getImagesOfUser = async function (emailId) {
     // Itereate and generate temporary url for each iamges
 
     var s3 = new aws.S3({
-        accessKeyId: deployConfig.s3.awsAccessKeyId,
-        secretAccessKey: deployConfig.s3.awsAccessKeySecret,
-        region: deployConfig.s3.awsRegion,
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
     });
     const urlExpiryTime = 60 * 5;
 
@@ -113,9 +113,9 @@ exports.getImageById = async function (imageId) {
 
     // Read image object from dynamo
     let dynamoDb = new aws.DynamoDB({
-        accessKeyId: deployConfig.ddb.awsAccessKeyId,
-        secretAccessKey: deployConfig.ddb.awsAccessKeySecret,
-        region: deployConfig.ddb.awsRegion,
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
         convertEmptyValues: true
     });
     let query = {
@@ -136,9 +136,9 @@ exports.getImageById = async function (imageId) {
     let email = result.Item.email.S;
 
     var s3 = new aws.S3({
-        accessKeyId: deployConfig.s3.awsAccessKeyId,
-        secretAccessKey: deployConfig.s3.awsAccessKeySecret,
-        region: deployConfig.s3.awsRegion,
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
     });
     const urlExpiryTime = 60 * 5;
 

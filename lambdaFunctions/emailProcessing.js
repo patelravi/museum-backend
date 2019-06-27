@@ -3,7 +3,8 @@ const uuidv4 = require('uuid/v4');
 const path = require('path');
 var aws = require('aws-sdk');
 
-require('./../config.js');
+require('dotenv').config({ path: './../.env' })
+global.deployConfig = process.env;
 let userModule = require('./../modules/user');
 let imageModule = require('./../modules/image');
 
@@ -83,7 +84,7 @@ exports.handler = async (event) => {
 // Read email with attachments from s3
 let getEmailContentFromS3 = async function (bucketName, objectKey) {
 
-    var s3 = new aws.S3({ accessKeyId: deployConfig.s3.awsAccessKeyId, secretAccessKey: deployConfig.s3.awsAccessKeySecret });
+    var s3 = new aws.S3({ accessKeyId: deployConfig.awsAccessKeyId, secretAccessKey: deployConfig.awsAccessKeySecret });
 
     var getParams = {
         Bucket: bucketName, //replace example bucket with your s3 bucket name

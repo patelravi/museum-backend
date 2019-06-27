@@ -1,4 +1,5 @@
-require('./config')
+require('dotenv').config({ path: './.env' })
+global.deployConfig = process.env;
 
 // Initialize express app
 var express = require('express');

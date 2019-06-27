@@ -5,9 +5,15 @@ var aws = require('aws-sdk');
 exports.saveUserInDb = async function (emailId) {
 
     let dynamoDb = new aws.DynamoDB.DocumentClient({
-        accessKeyId: deployConfig.ddb.awsAccessKeyId,
-        secretAccessKey: deployConfig.ddb.awsAccessKeySecret,
-        region: deployConfig.ddb.awsRegion,
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
+        convertEmptyValues: true
+    });
+    console.log('==> db query config', {
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
         convertEmptyValues: true
     });
 
@@ -30,9 +36,9 @@ exports.saveUserInDb = async function (emailId) {
 exports.sendImageProcessedEmail = async function (emailId, imageIdList) {
 
     var ses = new aws.SES({
-        accessKeyId: deployConfig.ses.awsAccessKeyId,
-        secretAccessKey: deployConfig.ses.awsAccessKeySecret,
-        region: deployConfig.ses.awsRegion,
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
         apiVersion: "2010-12-01"
     });
 
