@@ -33,6 +33,74 @@ exports.saveUserInDb = async function (emailId) {
 
 }
 
+// Get user details for profile
+exports.getUserDetails = async function (userEmail) {
+
+    // Read image object from dynamo
+    let dynamoDb = new aws.DynamoDB({
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
+        convertEmptyValues: true
+    });
+
+    let query = {
+        TableName: "users",
+        ProjectionExpression: "email, fullName, userName, userLocation",
+        Key: {
+            "email": { "S": userEmail }
+        },
+    }
+
+    let result = await dynamoDb.getItem(query).promise();
+    if (!result.Item) {
+        return null;
+    }
+
+    result = result.Item;
+    result.email = result.email.S;
+    result.fullName = result.fullName ? result.fullName.S : null;
+    result.userName = result.userName ? result.userName.S : null;
+    result.userLocation = result.userLocation ? result.userLocation.S : null;
+    // response.
+    return result;
+}
+
+// Update user details for profile
+exports.updateUserDetails = async function (email, userName, name, location) {
+
+    let dynamoDb = new aws.DynamoDB.DocumentClient({
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
+        convertEmptyValues: true
+    });
+    console.log('==> db query config', {
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
+        convertEmptyValues: true
+    });
+
+    // Create user with email id
+    let params = {
+        TableName: 'users',
+        Item: {
+            "email": email,
+            'userName': userName,
+            'fullName': name,
+            'userLocation': location
+        }
+    };
+    dynamoDb.put(params, function (error, data) {
+        if (error) {
+            console.error(error, JSON.stringify(params.Item.info.data));
+            return error;
+        }
+    });
+}
+
+
 exports.sendImageProcessedEmail = async function (emailId, imageIdList) {
 
     var ses = new aws.SES({

@@ -2,8 +2,9 @@ var express = require('express');
 var router = express.Router();
 
 const imageModule = require('./../modules/image');
+const userModule = require('./../modules/user');
 
-// Mentor list
+// Image list
 router.get('/images', async function (req, res) {
 
 
@@ -18,9 +19,9 @@ router.get('/images', async function (req, res) {
         images: result
     });
 
-})
+});
 
-// Mentor list
+// Image Details
 router.get('/image/:id', async function (req, res) {
 
 
@@ -33,7 +34,7 @@ router.get('/image/:id', async function (req, res) {
 
         res.json({
             success: true,
-            url: result
+            data: result
         });
     } catch (err) {
         console.error(err);
@@ -43,7 +44,61 @@ router.get('/image/:id', async function (req, res) {
         });
     }
 
-})
+});
 
+// Get Details
+router.get('/user/:email', async function (req, res) {
+
+
+    let email = req.params.email;
+    console.log('get user details requrest arrived...', email);
+
+    //Read image list
+    try {
+        let result = await userModule.getUserDetails(email);
+
+        res.json({
+            success: true,
+            data: result
+        });
+    } catch (err) {
+        console.error(err);
+        res.json({
+            success: false,
+            data: err
+        });
+    }
+
+});
+
+// Update User Details
+router.put('/user', async function (req, res) {
+
+
+    let email = req.body.email;
+    let userName = req.body.userName;
+    let name = req.body.name;
+    let location = req.body.location;
+
+    console.log('update user details requrest arrived...', req.body);
+
+    //Read image list
+    try {
+
+        let result = await userModule.updateUserDetails(email, userName, name, location);
+
+        res.json({
+            success: true,
+            data: result
+        });
+    } catch (err) {
+        console.error(err);
+        res.json({
+            success: false,
+            data: err
+        });
+    }
+
+});
 
 module.exports = router;

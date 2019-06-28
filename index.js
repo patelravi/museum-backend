@@ -13,6 +13,10 @@ app.use(require("cors")({
     credentials: true
 }));
 
+// Enable cross origin requests
+var cors = require('cors');
+app.use(cors())
+
 // Register routes
 app.use('/', require('./routes/open.routes'));
 
