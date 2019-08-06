@@ -1,5 +1,6 @@
 
 var aws = require('aws-sdk');
+const imageModule = require("./image");
 
 //Save User In Db
 exports.saveUserInDb = async function (emailId) {
@@ -110,24 +111,30 @@ exports.sendImageProcessedEmail = async function (emailId, imageIdList) {
         apiVersion: "2010-12-01"
     });
 
-    let emailMessage = '<html><body>Hi,' +
-        '<p>We have processed images from the email that you sent. Link for each is given below.</p>' +
-        '<br />';
-    console.log('fisrt meail message =>', emailMessage);
+    let emailMessage = "<html><body>Hi! Just wanted to let you know we received the following pictures you sent!<p>";
 
     //Build image url list
     let baseUrl = global.deployConfig.baseUrl + '/art/';
     for (var i = 0; i < imageIdList.length; i++) {
-        let imgUrl = baseUrl + imageIdList[i];
-        let link = '<a href="' + imgUrl + '">' + imgUrl + '</a>';
+        // let imgUrl = baseUrl + imageIdList[i];
+        let imgUrl = await imageModule.getImageById(imageIdList[i]);
+        let imagePageUrl = baseUrl + imageIdList[i];
+        let link = `<a href="${imagePageUrl}"><img style="height: 200px; width: auto;" src="${imgUrl}"></a>`;
         emailMessage = emailMessage.toString() + '<br />' + link.toString();
     }
+    let profileLink = 'http://eden.gallery/user?email=' + emailId;
+    emailMessage += `</p><p>Click on any of the images above to see it in your browser. <a href="${profileLink}">Click here</a> to view a gallery of all your images.</p>`;
 
     //End message html tags
     emailMessage += '</body></html>';
-    console.log('email message is ', emailMessage)
+    console.log('email message is ', emailMessage);
+
+    //Build email header text
+    let pictureText = imageIdList.length > 0 ? 'pictures' : 'picture';
+    let headerText = `Hooray, we got your ${pictureText}`;
+
     const params = {
-        Source: "connect@morganstreetpartners.com",
+        Source: "Eden <new@eden.gallery>",
         Destination: {
             ToAddresses: [emailId]
         },
@@ -145,7 +152,7 @@ exports.sendImageProcessedEmail = async function (emailId, imageIdList) {
             },
             Subject: {
                 Charset: "UTF-8",
-                Data: "Museum - Images Uploaded Successfully"
+                Data: headerText
             }
         }
     };
