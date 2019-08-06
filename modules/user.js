@@ -130,7 +130,7 @@ exports.sendImageProcessedEmail = async function (emailId, imageIdList) {
     console.log('email message is ', emailMessage);
 
     //Build email header text
-    let pictureText = imageIdList.length > 0 ? 'pictures' : 'picture';
+    let pictureText = imageIdList.length > 1 ? 'pictures' : 'picture';
     let headerText = `Hooray, we got your ${pictureText}`;
 
     const params = {
