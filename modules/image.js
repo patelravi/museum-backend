@@ -52,6 +52,77 @@ exports.saveImageInDb = async function (emailId, s3ObjectId, bucketName) {
 
 }
 
+// Update image metadata
+exports.updateImageMetadata = async function (imageId, title, painting, description) {
+    let dynamoDb = new aws.DynamoDB({
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
+        convertEmptyValues: true
+    });
+
+    // Create user with email id
+    let query = {
+        Key: {
+            id: {
+                S: imageId
+            }
+        },
+        TableName: "images",
+        ExpressionAttributeNames: {
+            "#t": "title",
+            "#p": "painting",
+            "#d": "description"
+        },
+        ExpressionAttributeValues: {
+            ":t": {
+                S: title
+            },
+            ":p": {
+                S: painting
+            },
+            ":d": {
+                S: description
+            }
+        },
+        UpdateExpression: "SET #t = :t, #p = :p, #d = :d"
+    };
+
+    // Store image link in dynamo db
+    await dynamoDb.updateItem(query).promise();
+    console.log("Image metadata saved in db.")
+
+    return;
+}
+
+// Get image metadata by image id
+exports.getImageMetadataById = async function (imageId) {
+    let dynamoDb = new aws.DynamoDB({
+        accessKeyId: deployConfig.awsAccessKeyId,
+        secretAccessKey: deployConfig.awsAccessKeySecret,
+        region: deployConfig.awsRegion,
+        convertEmptyValues: true
+    });
+
+    let query = {
+        TableName: "images",
+        ProjectionExpression: "id, title, painting, description",
+        Key: {
+            "id": { "S": imageId }
+        },
+    }
+    let result = (await dynamoDb.getItem(query).promise()).Item;
+    if (!result) {
+        return;
+    }
+
+    result = {
+        title: result.title.S,
+        painting: result.painting.S,
+        description: result.description.S
+    }
+    return result;
+}
 
 exports.getImagesOfUser = async function (emailId) {
 
