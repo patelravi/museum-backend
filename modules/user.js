@@ -111,22 +111,24 @@ exports.sendImageProcessedEmail = async function (emailId, imageIdList) {
         apiVersion: "2010-12-01"
     });
 
-    let emailMessage = "<html><body>Hi! Just wanted to let you know we received the following pictures you sent!<p>";
+    let emailMessage = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> \
+        <html><body>Hi! Just wanted to let you know we received the following pictures you sent!`;
 
     //Build image url list
+    emailMessage += `<div style="line-height:10px; font-size:2px;">`;
     let baseUrl = global.deployConfig.baseUrl + '/art/';
     for (var i = 0; i < imageIdList.length; i++) {
         // let imgUrl = baseUrl + imageIdList[i];
         let imgUrl = await imageModule.getImageById(imageIdList[i]);
         let imagePageUrl = baseUrl + imageIdList[i];
-        let link = `<a href="${imagePageUrl}"><img style="height: 200px; width: auto;" src="${imgUrl}"></a>`;
+        let link = `<a href="${imagePageUrl}"><img align="absbottom" style="max-height: 200px; width: auto; display: block;" src="${imgUrl}"></a>`;
         emailMessage = emailMessage.toString() + '<br />' + link.toString();
     }
     let profileLink = 'http://eden.gallery/user?email=' + emailId;
-    emailMessage += `</p><p>Click on any of the images above to see it in your browser. <a href="${profileLink}">Click here</a> to view a gallery of all your images.</p>`;
+    emailMessage += `</div><p>Click on any of the images above to see it in your browser. <a href="${profileLink}">Click here</a> to view a gallery of all your images.</p>`;
 
     //End message html tags
-    emailMessage += '</body></html>';
+    emailMessage += '</body></html><!DOCTYPE html>';
     console.log('email message is ', emailMessage);
 
     //Build email header text
