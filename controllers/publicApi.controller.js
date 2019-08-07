@@ -46,6 +46,72 @@ router.get('/image/:id', async function (req, res) {
 
 });
 
+// Update image metadata
+router.post('/updateImage/:id', async function (req, res) {
+    let imageId = req.params.id;
+    let title = req.body.title;
+    let painting = req.body.painting;
+    let description = req.body.description;
+
+    try {
+        await imageModule.updateImageMetadata(imageId, title, painting, description);
+        res.json({
+            success: true
+        })
+    } catch (err) {
+        console.error(err);
+        res.json({
+            success: false,
+            data: err
+        });
+    }
+})
+
+// Get image metadata by id
+router.get('/image/metadata/:id', async function (req, res) {
+    let imageId = req.params.id;
+
+    try {
+        let result = await imageModule.getImageMetadataById(imageId);
+        res.json({
+            success: true,
+            data: result
+        })
+    } catch (err) {
+        console.error(err);
+        res.json({
+            success: false,
+            data: err
+        });
+    }
+})
+
+// Get image list
+router.post('/imageList', async function (req, res) {
+
+    try {
+        let limit = req.body.limit;
+        let skip = req.body.skip;
+        let pageOptions = {
+            limit: parseInt(limit),
+            skip: parseInt(skip)
+        }
+        let lastEvaluatedKey = req.body.lastEvaluatedKey;
+
+        let result = await imageModule.getImageList(pageOptions, lastEvaluatedKey);
+        res.json({
+            success: true,
+            data: result
+        })
+    } catch (err) {
+        console.error(err);
+        res.json({
+            success: false,
+            data: err
+        });
+    }
+})
+
 // Get Details
 router.get('/user/:email', async function (req, res) {
 
