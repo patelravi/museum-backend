@@ -149,7 +149,38 @@ exports.getImageList = async function (limit, lastEvaluatedKey) {
     if (!result) {
         return;
     }
-    return result;
+
+    let response = []
+    for (var i = 0; i < result.Items.length; i++) {
+        let imageItem = result.Items[i];
+
+        // Iterate images and generate signed url
+        let s3ObjectId = imageItem.s3ObjectID.S;
+        let bucketName = imageItem.s3BucketName.S;
+        let email = imageItem.email.S;
+
+        var s3 = new aws.S3({
+            accessKeyId: deployConfig.awsAccessKeyId,
+            secretAccessKey: deployConfig.awsAccessKeySecret,
+            region: deployConfig.awsRegion,
+        });
+        const urlExpiryTime = 60 * 5;
+
+        const params = {
+            Bucket: bucketName,
+            Key: email + '/' + s3ObjectId,
+            Expires: urlExpiryTime
+        };
+        var signedUrl = s3.getSignedUrl('getObject', params);
+
+        response.push({
+            url: signedUrl,
+            id: imageItem.id.S
+        })
+    }
+
+
+    return response;
 }
 
 exports.getImagesOfUser = async function (emailId) {
