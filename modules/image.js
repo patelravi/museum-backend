@@ -105,7 +105,7 @@ exports.getImageMetadataById = async function (imageId) {
 
     let query = {
         TableName: "images",
-        ProjectionExpression: "id, title, painting, description",
+        ProjectionExpression: "id, email, title, painting, description",
         Key: {
             "id": { "S": imageId }
         },
@@ -118,8 +118,29 @@ exports.getImageMetadataById = async function (imageId) {
     result = {
         title: result.title.S,
         painting: result.painting.S,
-        description: result.description.S
+        description: result.description.S,
+        email: result.email.S
     }
+
+
+    //Return user details of that user
+    query = {
+        TableName: "users",
+        ProjectionExpression: "email, fullName, userName, userLocation",
+        Key: {
+            "email": { "S": result.email }
+        },
+    }
+
+    let userInfo = await dynamoDb.getItem(query).promise();
+    userInfo = userInfo.Item;
+    result.user = {
+        email: userInfo.email.S,
+        fullName: userInfo.fullName ? userInfo.fullName.S : null,
+        userName: userInfo.userName ? userInfo.userName.S : null,
+        userLocation: userInfo.userLocation ? userInfo.userLocation.S : null
+    }
+
     return result;
 }
 
@@ -178,7 +199,6 @@ exports.getImageList = async function (limit, lastEvaluatedKey) {
             id: imageItem.id.S
         })
     }
-
 
     return response;
 }
@@ -281,4 +301,5 @@ exports.getImageById = async function (imageId) {
 
     // Return image signed url
     return signedUrl;
+
 }
