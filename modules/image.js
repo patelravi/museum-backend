@@ -123,7 +123,7 @@ exports.getImageMetadataById = async function (imageId) {
     return result;
 }
 
-exports.getImageList = async function (pageOptions, lastEvaluatedKey) {
+exports.getImageList = async function (limit, lastEvaluatedKey) {
     let dynamoDb = new aws.DynamoDB({
         accessKeyId: deployConfig.awsAccessKeyId,
         secretAccessKey: deployConfig.awsAccessKeySecret,
@@ -134,8 +134,7 @@ exports.getImageList = async function (pageOptions, lastEvaluatedKey) {
     let query = {
         TableName: "images",
         ProjectionExpression: "id, email, s3ObjectID, s3BucketName",
-        Limit: pageOptions.limit,
-        ScanIndexForward: false
+        Limit: limit,
     }
 
     if (lastEvaluatedKey) {

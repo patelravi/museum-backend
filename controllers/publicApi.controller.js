@@ -91,14 +91,9 @@ router.post('/imageList', async function (req, res) {
 
     try {
         let limit = req.body.limit;
-        let skip = req.body.skip;
-        let pageOptions = {
-            limit: parseInt(limit),
-            skip: parseInt(skip)
-        }
         let lastEvaluatedKey = req.body.lastEvaluatedKey;
 
-        let result = await imageModule.getImageList(pageOptions, lastEvaluatedKey);
+        let result = await imageModule.getImageList(limit, lastEvaluatedKey);
         res.json({
             success: true,
             data: result
